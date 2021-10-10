@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SocialNetwork.Account
+﻿namespace SocialNetwork.Accounts
 {
-    public class CreateAccount : IAccountCreater
+    interface IAccount
     {
         public int Id { get; set; }
 
@@ -13,6 +11,5 @@ namespace SocialNetwork.Account
         public int Age { get; set; }
 
         public string Password { get; set; }
-
     }
 }
