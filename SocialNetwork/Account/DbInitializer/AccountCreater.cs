@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SocialNetwork.Account.CreatedServices
 {
-    public class AccountCreaterServices
+    public class AccountCreater
     {
         public static void Initialized(AppDbContext context)
         {

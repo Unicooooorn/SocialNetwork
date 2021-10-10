@@ -24,7 +24,7 @@ namespace SocialNetwork
                 try
                 {
                     var context = services.GetRequiredService<AppDbContext>();
-                    AccountCreaterServices.Initialized(context);
+                    AccountCreater.Initialized(context);
                 }
                 catch (Exception ex)
                 {
