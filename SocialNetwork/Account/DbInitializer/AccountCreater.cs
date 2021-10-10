@@ -22,8 +22,7 @@ namespace SocialNetwork.Account.CreatedServices
                         FirstName = "Иван",
                         LastName = "Иванов",
                         Age = 25,
-                        Password = "1111",
-                        PasswordConfirm = "1111"
+                        Password = "1111"
                     });
                 context.SaveChanges();
             }
