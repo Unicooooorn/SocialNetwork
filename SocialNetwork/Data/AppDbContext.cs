@@ -11,14 +11,11 @@ namespace SocialNetwork.Data
     {
         public DbSet<CreateAccount> Accounts { get; set; }
 
-        public AppDbContext()
-        {
-            Database.EnsureCreated();
-        }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5433;Database=ProfileDb;Username=postgres;Password=1111");
-        }
+            => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=ProfileDb;Username=postgres;Password=1111");
+
     }
 }

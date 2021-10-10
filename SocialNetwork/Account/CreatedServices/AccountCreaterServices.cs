@@ -1,4 +1,5 @@
-﻿using SocialNetwork.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using SocialNetwork.Data;
 using SocialNetwork.Profiles;
 using System;
 using System.Collections.Generic;
@@ -7,12 +8,13 @@ using System.Threading.Tasks;
 
 namespace SocialNetwork.Account.CreatedServices
 {
-    public class AccountCreaterServices : CreateAccount
+    public class AccountCreaterServices
     {
         public static void Initialized(AppDbContext context)
         {
             if(!context.Accounts.Any())
             {
+                context.Database.EnsureCreated();
                 context.Accounts.AddRange(
                     new CreateAccount
                     {
