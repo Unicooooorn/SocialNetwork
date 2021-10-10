@@ -15,10 +15,10 @@ namespace SocialNetwork.Data.EntityTypeConfiguration
         {
             builder.HasKey(profile => profile.Id);
             builder.HasIndex(profile => profile.Id).IsUnique();
-            builder.Property(profile => profile.FirstName).IsRequired();
-            builder.Property(profile => profile.LastName).IsRequired();
-            builder.Property(profile => profile.Age).IsRequired();
-            builder.Property(profile => profile.Password).IsRequired();
+            builder.Property(profile => profile.FirstName).IsRequired(true);
+            builder.Property(profile => profile.LastName).IsRequired(true);
+            builder.Property(profile => profile.Age).IsRequired(true);
+            builder.Property(profile => profile.Password).IsRequired(true);
         }
     }
 }

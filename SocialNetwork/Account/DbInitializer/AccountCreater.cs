@@ -15,7 +15,7 @@ namespace SocialNetwork.Account.CreatedServices
             if(!context.Accounts.Any())
             {
                 context.Database.EnsureCreated();
-                context.Accounts.AddRange(
+                context.Accounts.AddAsync(
                     new CreateAccount
                     {
                         Id = 1,
