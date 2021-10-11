@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SocialNetwork.Accounts.DbInitializer;
 using SocialNetwork.Data;
-using SocialNetwork.Data.DbInitializer;
 
 namespace SocialNetwork
 {
@@ -21,7 +20,7 @@ namespace SocialNetwork
         {
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
 
-            services.AddSingleton<FirstProfile>();
+            services.AddSingleton<AccountCreater>();
 
             services.AddControllers();
         }
