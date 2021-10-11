@@ -5,11 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SocialNetwork.Accounts;
 using SocialNetwork.Accounts.DbInitializer;
 using SocialNetwork.Data;
+using SocialNetwork.Rigistration;
 
 namespace SocialNetwork
 {
+    
+
     public class Startup
     {
         public IConfiguration Configuration { get; }
@@ -19,8 +23,6 @@ namespace SocialNetwork
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
-
-            services.AddSingleton<AccountCreater>();
 
             services.AddControllers();
         }

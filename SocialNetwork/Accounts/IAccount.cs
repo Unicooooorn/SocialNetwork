@@ -1,4 +1,6 @@
-﻿namespace SocialNetwork.Accounts
+﻿using System;
+
+namespace SocialNetwork.Accounts
 {
     interface IAccount
     {
@@ -8,8 +10,10 @@
 
         public string LastName { get; set; }
 
-        public int Age { get; set; }
-
         public string Password { get; set; }
+
+        public DateTime DateOfBirth { get; set; }
+
+        public DateTime DateOfRegistration { get; set; }
     }
 }

@@ -1,9 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SocialNetwork.Accounts;
+using SocialNetwork.Data;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace SocialNetwork.Profiles
 {
+    
     public class Profile : IProfile
     {
+        private AppDbContext dbContext = new AppDbContext();
+
         public int Id { get; set; }
                 
         public string FirstName { get; set; }

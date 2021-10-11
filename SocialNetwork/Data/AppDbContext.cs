@@ -5,7 +5,7 @@ namespace SocialNetwork.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Account> AccountDb { get; set; }
         public object Account { get; private set; }
 
         public AppDbContext() { }
