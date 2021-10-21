@@ -7,7 +7,7 @@ using System.Text;
 namespace SocialNetwork.Rigistration
 {
 
-    public class Registrator : Account, IRegistrable
+    public class Registrator : Account
     {
         Random rnd = new Random();
 
