@@ -2,29 +2,25 @@
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
+using SocialNetwork.Rigistration;
 
 namespace SocialNetwork.Accounts.DbInitializer
 {
-    public class AccountCreater
+    public class AccountCreater : Registrator
     {
-        public static void Initialized(AppDbContext context)
+        public AccountCreater() : base()
         {
-            if (!context.AccountDb.Any())
-            {
-                context.AccountDb.Add(
-                   new Account
-                   {
-                       Id = 1,
-                       FirstName = "Иван",
-                       LastName = "Иванов",
-                       Password = "1111",
-                       DateOfBirth = new DateTime(1996, 4, 4),
-                       DateOfRegistration = DateTime.Now
-
-                   });
-                context.SaveChanges();
-            }
-            
+                RegistrationAcc(account);
         }
+        
+        Account account = new Account
+        {
+            Login = "Pop",
+            FirstName = "Иван",
+            LastName = "Иванов",
+            Password = "1111",
+            DateOfBirth = new DateTime(1996, 4, 4),
+            DateOfRegistration = DateTime.Now
+        };
     }
 }

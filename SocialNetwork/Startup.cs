@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using SocialNetwork.Accounts;
 using SocialNetwork.Accounts.DbInitializer;
 using SocialNetwork.Data;
+using SocialNetwork.Profiles;
 using SocialNetwork.Rigistration;
 
 namespace SocialNetwork
@@ -38,10 +39,7 @@ namespace SocialNetwork
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                AccountCreater account = new AccountCreater();
             });
         }
     }
