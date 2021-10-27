@@ -1,23 +1,12 @@
-﻿using System;
-
-namespace SocialNetwork.Accounts
+﻿namespace SocialNetwork.Accounts.Registrations
 {
-    interface IAccount
+    interface IRegistration
     {
-        public int Id { get; set; }
-
         public string Login { get; set; }
-
         public string FirstName { get; set; }
-
         public string LastName { get; set; }
-
         public string Password { get; set; }
-
         public string DateOfBirth { get; set; }
 
-        public string DateOfRegistration { get; set; }
-
-        public int Salt { get; set; }
     }
 }

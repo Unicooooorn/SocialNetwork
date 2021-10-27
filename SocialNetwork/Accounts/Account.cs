@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Accounts
 {
@@ -22,11 +21,10 @@ namespace SocialNetwork.Accounts
         public string Password { get; set; }
 
         [Required(ErrorMessage = "Укажите дату рождения")]
-        [DataType(DataType.Date)]
-        public DateTime DateOfBirth { get; set; }
+        public string DateOfBirth { get; set; }
 
         [Required]
-        public DateTime DateOfRegistration { get; set; }
+        public string DateOfRegistration { get; set; }
 
         [Required]
         public int Salt { get; set; }

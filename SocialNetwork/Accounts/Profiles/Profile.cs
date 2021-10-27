@@ -1,7 +1,12 @@
-﻿namespace SocialNetwork.Profiles
+﻿using SocialNetwork.Data;
+
+namespace SocialNetwork.Accounts.Profiles
 {
-    interface IProfile
+
+    public class Profile : IProfile
     {
+        public string Login { get; set; }
+
         public int Id { get; set; }
 
         public string FirstName { get; set; }
