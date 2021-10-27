@@ -25,7 +25,9 @@ namespace SocialNetwork
         {
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options => 
+                options.JsonSerializerOptions.PropertyNamingPolicy = null);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -39,7 +41,7 @@ namespace SocialNetwork
 
             app.UseEndpoints(endpoints =>
             {
-                AccountCreater account = new AccountCreater();
+                endpoints.MapControllers();
             });
         }
     }
