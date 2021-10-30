@@ -12,13 +12,7 @@ namespace SocialNetwork.Controllers
 {
     [Route("WTentakle/Registration")]
     public class ProfilePostController : Controller
-    {
-        Random rnd = new Random();
-
-        private SHA256 _SHA256 = SHA256.Create();
-
-        private int _salt;
-
+    {   
         private readonly AppDbContext _dbContext;
 
         public ProfilePostController(AppDbContext dbContext)
@@ -30,16 +24,17 @@ namespace SocialNetwork.Controllers
         [HttpPost]
         public ActionResult RegistrationAcc([FromBody] Registration registration)
         {
+            Random rnd = new Random();
+
+            SHA256 _SHA256 = SHA256.Create();
+
+            int _salt = rnd.Next();
+
             if (registration == null || registration.Login == null)
-            {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
-            }
 
             if (_dbContext.AccountDb.Any(l => l.Login == registration.Login))
                 return StatusCode((int)HttpStatusCode.Conflict);
-
-
-            _salt = rnd.Next();
 
             byte[] pass = Encoding.UTF32.GetBytes(_salt.ToString() + registration.Password);
 

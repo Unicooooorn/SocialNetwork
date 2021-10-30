@@ -22,9 +22,7 @@ namespace SocialNetwork.Controllers
         public ActionResult<Profile> GetProfiles(int id)
         {
             if (!_dbContext.AccountDb.Any(i => i.Id == id))
-            {
                 return NotFound();
-            };
 
             Account account = (from prof in _dbContext.AccountDb
                                where prof.Id == id
