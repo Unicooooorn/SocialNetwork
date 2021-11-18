@@ -20,6 +20,8 @@ namespace SocialNetwork
         {
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
 
+            services.AddDbContext<FriendDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("FriendDbContext")));
+
             services.AddControllers()
                 .AddJsonOptions(options =>
                 options.JsonSerializerOptions.PropertyNamingPolicy = null);

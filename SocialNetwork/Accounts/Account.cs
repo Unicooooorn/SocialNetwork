@@ -4,7 +4,7 @@ namespace SocialNetwork.Accounts
 {
     public class Account : IAccount
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         [Required(ErrorMessage = "Поле Логин не может быть пустым!")]
         public string Login { get; set; }

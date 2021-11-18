@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Accounts;
+using SocialNetwork.Accounts.Freinds;
 using SocialNetwork.Accounts.Profiles;
 using SocialNetwork.Accounts.Registrations;
 using SocialNetwork.Data;
@@ -14,36 +15,46 @@ namespace SocialNetwork.Controllers
     [Route("WTentakle")]
     public class ProfileController : Controller
     {   
-        public ProfileController(AppDbContext dbContext)
+        public ProfileController(AppDbContext dbContext, FriendDbContext friendDbContext)
         {
             _dbContext = dbContext;
+            _friendDbContext = friendDbContext;
         }
 
         private readonly AppDbContext _dbContext;
+
+        private readonly FriendDbContext _friendDbContext;
 
         //GET WTentakle/Profile
         [HttpGet("Profile/{id}")]
         public ActionResult<Profile> GetProfiles(int id)
         {
-            if (!_dbContext.AccountDb.Any(i => i.Id == id))
-                return NotFound();
-
             Account account = (from prof in _dbContext.AccountDb
                                where prof.Id == id
                                select prof).FirstOrDefault();
-
-            int now = int.Parse(DateTime.Now.ToString("yyyy"));
-            int dob = int.Parse(account.DateOfBirth.Remove(4, 4));
-
-            Profile profile = new Profile
+            try
             {
-                Id = account.Id,
-                Login = account.Login,
-                FirstName = account.FirstName,
-                LastName = account.LastName,
-                Age = (now - dob)
-            };
-            return profile;
+                int now = int.Parse(DateTime.Now.ToString("yyyy"));
+                int dob = int.Parse(account.DateOfBirth.Remove(4, 4));
+
+                Profile profile = new Profile
+                {
+                    Id = account.Id,
+                    Login = account.Login,
+                    FirstName = account.FirstName,
+                    LastName = account.LastName,
+                    Age = (now - dob)
+                };
+                return profile;
+            }
+            catch (NullReferenceException)
+            {
+                    return NotFound();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         //POST WTentakle/Registration/
@@ -56,26 +67,30 @@ namespace SocialNetwork.Controllers
 
             int _salt = rnd.Next();
 
-            if (registration == null || registration.Login == null)
-                return StatusCode((int)HttpStatusCode.InternalServerError);
-
-            if (_dbContext.AccountDb.Any(l => l.Login == registration.Login))
-                return StatusCode((int)HttpStatusCode.Conflict);
-
-            Account account = new Account
+            try
             {
-                Login = registration.Login,
-                FirstName = registration.FirstName,
-                LastName = registration.LastName,
-                Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + _salt.ToString()))),
-                DateOfBirth = registration.DateOfBirth,
-                DateOfRegistration = DateTime.Now.ToLongDateString(),
-                Salt = _salt
-            };
-            _dbContext.AccountDb.Add(account);
-            _dbContext.SaveChanges();
+                Account account = new Account
+                {
+                    Login = registration.Login,
+                    FirstName = registration.FirstName,
+                    LastName = registration.LastName,
+                    Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + _salt.ToString()))),
+                    DateOfBirth = registration.DateOfBirth,
+                    DateOfRegistration = DateTime.Now.ToLongDateString(),
+                    Salt = _salt
+                };
+                _dbContext.AccountDb.Add(account);
+                _dbContext.SaveChanges();
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                if (_dbContext.AccountDb.Any(l => l.Login == registration.Login))
+                    return StatusCode(409);
+
+                return BadRequest();
+            }            
         }
 
         //PUT Wtentakle/UpdateInfo
@@ -84,25 +99,30 @@ namespace SocialNetwork.Controllers
         {
             Account account = (from acc in _dbContext.AccountDb where acc.Login == registration.Login
                               select acc).FirstOrDefault();
-            if (account == null)
-                return BadRequest();
 
-            account.FirstName = registration.FirstName ?? account.FirstName;
-            account.LastName = registration.LastName ?? account.LastName;
-            account.DateOfBirth = registration.DateOfBirth ?? account.DateOfBirth;
-            account.Login = registration.Login ?? account.Login;
-
-            if (registration.Password != null)
+            try
             {
-                int salt = account.Salt;
-                SHA256 _SHA256 = SHA256.Create();
-                account.Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + salt.ToString())));
+                account.FirstName = registration.FirstName ?? account.FirstName;
+                account.LastName = registration.LastName ?? account.LastName;
+                account.DateOfBirth = registration.DateOfBirth ?? account.DateOfBirth;
+                account.Login = registration.Login ?? account.Login;
+
+                if (registration.Password != null)
+                {
+                    int salt = account.Salt;
+                    SHA256 _SHA256 = SHA256.Create();
+                    account.Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + salt.ToString())));
+                }
+
+                _dbContext.AccountDb.Update(account);
+                _dbContext.SaveChanges();
+
+                return Ok();
             }
-
-            _dbContext.AccountDb.Update(account);
-            _dbContext.SaveChanges();
-
-            return Ok();
+            catch (Exception)
+            {
+                return BadRequest();
+            }            
         }
 
 
@@ -116,15 +136,28 @@ namespace SocialNetwork.Controllers
             SHA256 _SHA256 = SHA256.Create();
             Account account = (from acc in _dbContext.AccountDb where acc.Id == id select acc).FirstOrDefault();
 
-            string pass = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(Pass + account.Salt)));
-
-            if (pass.Contains(account.Password))
+            try
             {
-                _dbContext.AccountDb.Remove(account);
-                _dbContext.SaveChanges();
+                string pass = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(Pass + account.Salt)));
+
+                if (pass.Contains(account.Password))
+                {
+                    _dbContext.AccountDb.Remove(account);
+                    _dbContext.SaveChanges();
+                }
                 return Ok();
             }
-            return BadRequest();
+            catch (Exception)
+            {
+                return BadRequest();
+            }            
         }
+
+        ////POST Wtentakle/AddFriend/
+        //[HttpPost("AddFriend/{id}")]
+        //public ActionResult AddFriend([FromBody] long friendAcc, [FromRoute] long myAccount)
+        //{
+
+        //}
     }
 }
