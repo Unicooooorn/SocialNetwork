@@ -1,10 +1,10 @@
-﻿using System;
+﻿using System.Collections.Generic;
 
 namespace SocialNetwork.Accounts
 {
     interface IAccount
     {
-        public long Id { get; set; }
+        public long Id { get; }
 
         public string Login { get; set; }
 
@@ -19,5 +19,7 @@ namespace SocialNetwork.Accounts
         public string DateOfRegistration { get; set; }
 
         public int Salt { get; set; }
+
+        public List<long> Friend { get; set; }
     }
 }

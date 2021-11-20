@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Accounts;
-using SocialNetwork.Accounts.Freinds;
 using SocialNetwork.Accounts.Profiles;
 using SocialNetwork.Accounts.Registrations;
 using SocialNetwork.Data;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,19 +14,16 @@ namespace SocialNetwork.Controllers
     [Route("WTentakle")]
     public class ProfileController : Controller
     {   
-        public ProfileController(AppDbContext dbContext, FriendDbContext friendDbContext)
+        public ProfileController(AppDbContext dbContext)
         {
             _dbContext = dbContext;
-            _friendDbContext = friendDbContext;
         }
 
         private readonly AppDbContext _dbContext;
 
-        private readonly FriendDbContext _friendDbContext;
-
         //GET WTentakle/Profile
         [HttpGet("Profile/{id}")]
-        public ActionResult<Profile> GetProfiles(int id)
+        public ActionResult<Profile> GetProfiles(long id)
         {
             Account account = (from prof in _dbContext.AccountDb
                                where prof.Id == id
@@ -128,7 +124,7 @@ namespace SocialNetwork.Controllers
 
         //Delete Wtentakle/DeleteAcc
         [HttpDelete("DeleteAcc/{id}")]
-        public ActionResult DeleteAcc([FromBody]string Pass, [FromRoute]int id)
+        public ActionResult DeleteAcc([FromBody]string Pass, [FromRoute]long id)
         {            
             if(Pass == null)
                 return BadRequest();
@@ -153,11 +149,66 @@ namespace SocialNetwork.Controllers
             }            
         }
 
-        ////POST Wtentakle/AddFriend/
-        //[HttpPost("AddFriend/{id}")]
-        //public ActionResult AddFriend([FromBody] long friendAcc, [FromRoute] long myAccount)
-        //{
+        //GET Wtentakle/GetFriend/
+        [HttpGet("GetFriend/{id}")]
+        public ActionResult<List<Profile>> GetFriend(long id)
+        {
+            Account account = (from acc in _dbContext.AccountDb where acc.Id == id select acc).FirstOrDefault();
 
-        //}
+            try
+            {
+                List<Profile> prof = new List<Profile>();
+                if (account.Friend.Count > 0)
+                    foreach (var item in account.Friend)
+                    {
+                        Account acnt = (from acc in _dbContext.AccountDb where acc.Id == item select acc).FirstOrDefault();
+                        if (acnt != null)
+                        {
+                            int now = int.Parse(DateTime.Now.ToString("yyyy"));
+                            int dob = int.Parse(acnt.DateOfBirth.Remove(4, 4));
+
+                            prof.Add(new Profile
+                            {
+                                FirstName = acnt.FirstName,
+                                LastName = acnt.LastName,
+                                Id = acnt.Id,
+                                Age = (now - dob),
+                                Login = acnt.Login
+                            });
+                        }
+                    }
+                return prof;
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
+
+
+        //POST Wtentakle/AddFriend/
+        [HttpPost("AddFriend/{myAccount}")]
+        public ActionResult AddFriend([FromBody]long friendAcc, [FromRoute]long myAccount)
+        {
+            Account account = (from acc in _dbContext.AccountDb where acc.Id == myAccount select acc).FirstOrDefault();
+
+            if(friendAcc.Equals(myAccount))
+                return BadRequest();
+
+            try
+            {
+                if (!account.Friend.Exists(x => x == friendAcc))
+                {
+                    account.Friend.Add(friendAcc);
+                    _dbContext.SaveChanges();
+                    return Ok();
+                }
+                return BadRequest();
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
     }
 }

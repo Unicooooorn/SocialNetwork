@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Accounts
 {
     public class Account : IAccount
     {
-        public long Id { get; set; }
+        public Account()
+        {
+            Friend = new List<long>();
+        }
+
+        public long Id { get; }
 
         [Required(ErrorMessage = "Поле Логин не может быть пустым!")]
         public string Login { get; set; }
@@ -27,5 +33,7 @@ namespace SocialNetwork.Accounts
 
         [Required]
         public int Salt { get; set; }
+
+        public List<long> Friend { get; set; }
     }
 }
