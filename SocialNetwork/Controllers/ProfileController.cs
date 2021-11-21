@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SocialNetwork.Data;
 using SocialNetwork.Model.Accounts;
 using SocialNetwork.Model.Accounts.Profiles;
 using SocialNetwork.Model.Accounts.Registrations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using SocialNetwork.Extensions;
+using System.Linq;
 
 namespace SocialNetwork.Controllers
 {
@@ -23,11 +26,10 @@ namespace SocialNetwork.Controllers
 
         //GET WTentakle/Profile
         [HttpGet("Profile/{id}")]
-        public ActionResult<Profile> GetProfiles(long id)
+        public async Task<ActionResult<Profile>> GetProfiles(long id)
         {
-            Account account = (from prof in _dbContext.AccountDb
-                               where prof.Id == id
-                               select prof).FirstOrDefault();
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(account => account.Id == id);
+                              
             try
             {
                 int now = int.Parse(DateTime.Now.ToString("yyyy"));
@@ -55,10 +57,9 @@ namespace SocialNetwork.Controllers
 
         //PUT Wtentakle/UpdateInfo
         [HttpPut("UpdateInfo/{id}")]
-        public ActionResult UpdateInfoAcc([FromBody] Registration registration)
+        public async Task<ActionResult> UpdateInfoAcc([FromBody] Registration registration)
         {
-            Account account = (from acc in _dbContext.AccountDb where acc.Login == registration.Login
-                              select acc).FirstOrDefault();
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Login == registration.Login);
 
             try
             {
@@ -75,7 +76,7 @@ namespace SocialNetwork.Controllers
                 }
 
                 _dbContext.AccountDb.Update(account);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 return Ok();
             }
@@ -86,15 +87,15 @@ namespace SocialNetwork.Controllers
         }
 
 
-        //Delete Wtentakle/DeleteAcc
+        //DELETE Wtentakle/DeleteAcc
         [HttpDelete("DeleteAcc/{id}")]
-        public ActionResult DeleteAcc([FromBody]string Pass, [FromRoute]long id)
+        public async Task<ActionResult> DeleteAcc([FromBody]string Pass, [FromRoute]long id)
         {            
             if(Pass == null)
                 return BadRequest();
 
             SHA256 _SHA256 = SHA256.Create();
-            Account account = (from acc in _dbContext.AccountDb where acc.Id == id select acc).FirstOrDefault();
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == id);
 
             try
             {
@@ -103,7 +104,7 @@ namespace SocialNetwork.Controllers
                 if (pass.Contains(account.Password))
                 {
                     _dbContext.AccountDb.Remove(account);
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                 }
                 return Ok();
             }
@@ -115,32 +116,36 @@ namespace SocialNetwork.Controllers
 
         //GET Wtentakle/GetFriend/
         [HttpGet("GetFriend/{id}")]
-        public ActionResult<List<Profile>> GetFriend(long id)
+        public async Task<ActionResult<List<Profile>>> GetFriend(long id)
         {
-            Account account = (from acc in _dbContext.AccountDb where acc.Id == id select acc).FirstOrDefault();
-
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == id);
             try
             {
-                List<Profile> prof = new List<Profile>();
+                List<Profile> prof = new();
+                await CheckFriendExtensions.CheckFriendAsync(account.Friend);
+                _dbContext.Update(account);
+                await _dbContext.SaveChangesAsync();
+
                 if (account.Friend.Count > 0)
+                {                    
                     foreach (var item in account.Friend)
                     {
-                        Account acnt = (from acc in _dbContext.AccountDb where acc.Id == item select acc).FirstOrDefault();
-                        if (acnt != null)
-                        {
-                            int now = int.Parse(DateTime.Now.ToString("yyyy"));
-                            int dob = int.Parse(acnt.DateOfBirth.Remove(4, 4));
+                        Account acnt = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == item);
 
-                            prof.Add(new Profile
-                            {
-                                FirstName = acnt.FirstName,
-                                LastName = acnt.LastName,
-                                Id = acnt.Id,
-                                Age = (now - dob),
-                                Login = acnt.Login
-                            });
-                        }
+                        int now = int.Parse(DateTime.Now.ToString("yyyy"));
+                        int dob = int.Parse(acnt.DateOfBirth.Remove(4, 4));
+
+                        prof.Add(new Profile
+                        {
+                            FirstName = acnt.FirstName,
+                            LastName = acnt.LastName,
+                            Id = acnt.Id,
+                            Age = (now - dob),
+                            Login = acnt.Login
+                        });
                     }
+                }
+
                 return prof;
             }
             catch (Exception)
@@ -152,9 +157,9 @@ namespace SocialNetwork.Controllers
 
         //POST Wtentakle/AddFriend/
         [HttpPost("AddFriend/{myAccount}")]
-        public ActionResult AddFriend([FromBody]long friendAcc, [FromRoute]long myAccount)
+        public async Task<ActionResult> AddFriend([FromBody]long friendAcc, [FromRoute]long myAccount)
         {
-            Account account = (from acc in _dbContext.AccountDb where acc.Id == myAccount select acc).FirstOrDefault();
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == myAccount);
 
             if(friendAcc.Equals(myAccount))
                 return BadRequest();
@@ -164,7 +169,7 @@ namespace SocialNetwork.Controllers
                 if (!account.Friend.Exists(x => x == friendAcc))
                 {
                     account.Friend.Add(friendAcc);
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                     return Ok();
                 }
                 return BadRequest();
@@ -173,6 +178,32 @@ namespace SocialNetwork.Controllers
             {
                 return NotFound();
             }
+        }
+
+
+        //DELETE Wtentakle/DropFriend
+        [HttpDelete("DropFriend/{myAccount}")]
+        public async Task<ActionResult> DropFriend([FromBody]long friendAcc, [FromRoute] long myAccount)
+        {
+            Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == myAccount);
+
+            await CheckFriendExtensions.CheckFriendAsync(account.Friend);
+            _dbContext.Update(account);
+            await _dbContext.SaveChangesAsync();
+
+            try
+            {
+                if (!account.Friend.Exists(f => f == friendAcc))
+                    throw new Exception();
+                account.Friend.Remove(friendAcc);
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
         }
     }
 }
