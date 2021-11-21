@@ -122,8 +122,7 @@ namespace SocialNetwork.Controllers
             try
             {
                 List<Profile> prof = new();
-                await CheckFriendExtensions.CheckFriendAsync(account.Friend);
-                _dbContext.Update(account);
+                await CheckFriendExtensions.CheckFriendAsync(account);
                 await _dbContext.SaveChangesAsync();
 
                 if (account.Friend.Count > 0)
@@ -187,8 +186,7 @@ namespace SocialNetwork.Controllers
         {
             Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == myAccount);
 
-            await CheckFriendExtensions.CheckFriendAsync(account.Friend);
-            _dbContext.Update(account);
+            await CheckFriendExtensions.CheckFriendAsync(account);
             await _dbContext.SaveChangesAsync();
 
             try

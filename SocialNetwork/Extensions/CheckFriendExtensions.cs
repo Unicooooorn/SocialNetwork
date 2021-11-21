@@ -11,14 +11,15 @@ namespace SocialNetwork.Extensions
     {
         private static readonly AppDbContext _dbContext = new();
 
-        public async static Task CheckFriendAsync(this List<long> profiles)
+        public async static Task CheckFriendAsync(this Account account)
         {
-            foreach (var item in profiles.ToList())
+            foreach (var item in account.Friend.ToList())
             {
-                Account account = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == item);
-                if (account == null)
-                    profiles.Remove(item);
+                Account accnt = await _dbContext.AccountDb.FirstOrDefaultAsync(x => x.Id == item);
+                if (accnt == null)
+                    account.Friend.Remove(item);
             }
+            _dbContext.Update(account);
         }
     }
 }
