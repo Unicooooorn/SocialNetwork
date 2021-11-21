@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SocialNetwork.Accounts;
-using SocialNetwork.Accounts.Profiles;
-using SocialNetwork.Accounts.Registrations;
 using SocialNetwork.Data;
+using SocialNetwork.Model.Accounts;
+using SocialNetwork.Model.Accounts.Profiles;
+using SocialNetwork.Model.Accounts.Registrations;
 using System;
 using System.Collections.Generic;
 using System.Linq;

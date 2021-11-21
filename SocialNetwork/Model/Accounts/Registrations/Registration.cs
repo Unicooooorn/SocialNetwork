@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SocialNetwork.Accounts.Registrations
+namespace SocialNetwork.Model.Accounts.Registrations
 {
     public class Registration : IRegistration
     {

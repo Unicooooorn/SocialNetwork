@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SocialNetwork.Accounts
+namespace SocialNetwork.Model.Accounts
 {
     interface IAccount
     {

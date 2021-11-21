@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Accounts.Registrations
+﻿namespace SocialNetwork.Model.Accounts.Registrations
 {
     interface IRegistration
     {

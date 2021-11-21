@@ -1,6 +1,7 @@
-﻿namespace SocialNetwork.Accounts.Profiles
+﻿namespace SocialNetwork.Model.Accounts.Profiles
 {
-    interface IProfile
+
+    public class Profile : IProfile
     {
         public string Login { get; set; }
 

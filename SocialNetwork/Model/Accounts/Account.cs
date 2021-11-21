@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.Accounts
+namespace SocialNetwork.Model.Accounts
 {
     public class Account : IAccount
     {

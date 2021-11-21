@@ -19,6 +19,7 @@ namespace SocialNetwork
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
+            services.AddDbContext<MessageDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
 
             services.AddControllers()
                 .AddJsonOptions(options =>

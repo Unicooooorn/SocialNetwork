@@ -1,9 +1,6 @@
-﻿using SocialNetwork.Data;
-
-namespace SocialNetwork.Accounts.Profiles
+﻿namespace SocialNetwork.Model.Accounts.Profiles
 {
-
-    public class Profile : IProfile
+    interface IProfile
     {
         public string Login { get; set; }
 
