@@ -53,42 +53,6 @@ namespace SocialNetwork.Controllers
             }
         }
 
-        //POST WTentakle/Registration/
-        [HttpPost("Registration")]
-        public ActionResult RegistrationAcc([FromBody] Registration registration)
-        {
-            Random rnd = new Random();
-
-            SHA256 _SHA256 = SHA256.Create();
-
-            int _salt = rnd.Next();
-
-            try
-            {
-                Account account = new Account
-                {
-                    Login = registration.Login,
-                    FirstName = registration.FirstName,
-                    LastName = registration.LastName,
-                    Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + _salt.ToString()))),
-                    DateOfBirth = registration.DateOfBirth,
-                    DateOfRegistration = DateTime.Now.ToLongDateString(),
-                    Salt = _salt
-                };
-                _dbContext.AccountDb.Add(account);
-                _dbContext.SaveChanges();
-
-                return Ok();
-            }
-            catch (Exception)
-            {
-                if (_dbContext.AccountDb.Any(l => l.Login == registration.Login))
-                    return StatusCode(409);
-
-                return BadRequest();
-            }            
-        }
-
         //PUT Wtentakle/UpdateInfo
         [HttpPut("UpdateInfo/{id}")]
         public ActionResult UpdateInfoAcc([FromBody] Registration registration)

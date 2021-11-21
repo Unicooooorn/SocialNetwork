@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -18,8 +19,17 @@ namespace SocialNetwork
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
-            services.AddDbContext<MessageDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
+            services.AddDbContext<AppDbContext>(options => 
+                options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
+
+            services.AddDbContext<MessageDbContext>(options => 
+                options.UseNpgsql(Configuration.GetConnectionString("MessageDbContext")));
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString();
+                });
 
             services.AddControllers()
                 .AddJsonOptions(options =>
@@ -34,6 +44,10 @@ namespace SocialNetwork
             }
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
 
             app.UseEndpoints(endpoints =>
             {
