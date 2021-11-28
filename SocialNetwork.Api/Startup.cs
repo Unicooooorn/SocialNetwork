@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SocialNetwork.Api.Controllers;
 using SocialNetwork.Api.Data;
+using SocialNetwork.Api.Dto;
 using SocialNetwork.Api.Middlewares;
 
 namespace SocialNetwork.Api
@@ -20,9 +22,9 @@ namespace SocialNetwork.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ExceptionHandlingMiddleware>();
-
+            
             services.AddDbContext<AccDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("AppDbContext")));
+                options.UseNpgsql(Configuration.GetConnectionString("AccDbContext")));
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>

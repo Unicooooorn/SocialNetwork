@@ -1,15 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
-namespace SocialNetwork.Api.Model.Logins
+namespace SocialNetwork.Api.Dto.Account
 {
-    public class LoginModel
+    public class LoginModelDto
     {
-        [JsonPropertyName("Login")]
         [Required(ErrorMessage = "Не указан логин!")]
         public string Login { get; set; }
 
-        [JsonPropertyName("Password")]
         [Required(ErrorMessage = "Не указан пароль")]
         public string Password { get; set; }
     }

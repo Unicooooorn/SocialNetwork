@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Dto.Account;
 using SocialNetwork.Api.Model.Accounts;
-using SocialNetwork.Api.Model.Logins;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -30,7 +29,7 @@ namespace SocialNetwork.Api.Controllers
 
         //POST WTentakle/Login
         [HttpPost("Login")]
-        public async Task<ActionResult> Login([FromBody]LoginModel model)
+        public async Task<ActionResult> Login([FromBody]LoginModelDto model)
         {
             if (ModelState.IsValid)
             {
@@ -57,7 +56,7 @@ namespace SocialNetwork.Api.Controllers
 
         //POST WTentakle/Registration/
         [HttpPost("Registration")]
-        public async Task<ActionResult> RegistrationAccountAsync([FromBody]RegisterAccountRequest registration)
+        public async Task<ActionResult> RegistrationAccountAsync([FromBody]RegistrationAccountRequest registration)
         {
             if (ModelState.IsValid)
             {
@@ -91,6 +90,8 @@ namespace SocialNetwork.Api.Controllers
             }
             return BadRequest();
         }
+
+
 
         private async Task<IActionResult> Authenticate(string login)
         {

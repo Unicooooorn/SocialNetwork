@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SocialNetwork.Api.Dto.Account
+﻿namespace SocialNetwork.Api.Dto.Account
 {
-    public class RegisterAccountRequest
+    public class RegistrationAccountRequest
     {
         public string Login { get; set; }
 
