@@ -1,4 +1,5 @@
-﻿using SocialNetwork.Api.Dto.Account;
+﻿using System.Linq;
+using SocialNetwork.Api.Dto.Account;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -16,9 +17,11 @@ namespace SocialNetwork.Desktop.Services
             {
                 foreach (PropertyInfo reg in registrationAccountRequest.GetType().GetProperties())
                 {
-                    if (reg == null)
-                        MessageBox.Show($"Field {reg.PropertyType} cannot empty");
-                    return HttpStatusCode.BadRequest;
+                    if (reg.GetValue(registrationAccountRequest) == null)
+                    {
+                        MessageBox.Show($"{reg.Name} cannot empty");
+                        return HttpStatusCode.BadRequest;
+                    }
                 }
 
                 using var client = new HttpClient();
@@ -35,7 +38,6 @@ namespace SocialNetwork.Desktop.Services
 
                 return HttpStatusCode.OK;
             }
-
             return HttpStatusCode.NotFound;
         }
     }
