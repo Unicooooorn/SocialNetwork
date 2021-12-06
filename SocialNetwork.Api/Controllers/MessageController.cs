@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Api.Data;
@@ -7,13 +8,12 @@ using SocialNetwork.Api.Model.Messages;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 
 namespace SocialNetwork.Api.Controllers
 {
     [Route("WTentakle")]
     [Authorize]
-    public class MessageController : Controller
+    public class MessageController : ControllerBase
     {
         public MessageController(AccDbContext appDbContext, ILogger<MessageController> logger)
         {

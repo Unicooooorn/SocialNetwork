@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Api.Data;
@@ -9,14 +10,12 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace SocialNetwork.Api.Controllers
 {
     [Route("WTentakle")]
     [Authorize]
-    public class ProfileController : Controller
+    public class ProfileController : ControllerBase
     {
         public ProfileController(AccDbContext dbContext, ILogger<ProfileController> logger)
         {

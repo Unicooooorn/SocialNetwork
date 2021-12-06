@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace SocialNetwork.Api.Controllers
 {
     [Route("Wtentakle")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         public AccountController(AccDbContext dbContext, ILogger<AccountController> logger)
         {
@@ -97,7 +97,7 @@ namespace SocialNetwork.Api.Controllers
         {
             var claims = new List<Claim>();
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, "Login");
+                new Claim(ClaimsIdentity.DefaultNameClaimType, login);
             };
 
             ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
