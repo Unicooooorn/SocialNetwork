@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:rules="clr-namespace:SocialNetwork.Desktop.Validations"
         xmlns:loginViewModel="clr-namespace:SocialNetwork.Desktop.ViewModel"
         d:DataContext="{d:DesignInstance Type=loginViewModel:LoginViewModel}"
         mc:Ignorable="d"
@@ -21,11 +22,27 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0">
             <Label Content="Login" HorizontalAlignment="Left" />
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text ="{Binding Path=LoginModel.Login, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="LoginModel.Login" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </StackPanel>
         <StackPanel Grid.Row="1">
             <Label Content="Password" HorizontalAlignment="Left" />
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text="{Binding Path= LoginModel.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="LoginModel.Password" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </StackPanel>
         <Button Grid.Row="4" HorizontalAlignment="Left" Margin="125,10,0,0" Height="20" Width="50" Content="Login" Command="{Binding Path=LoginCommand}" />
         <Button Grid.Row="4" HorizontalAlignment="Left" Margin="225,10,0,0" Height="20" Width="50" Content="Exit" Command="{Binding Path=ExitCommand}" />

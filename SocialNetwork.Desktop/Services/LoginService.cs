@@ -1,5 +1,4 @@
 ﻿using SocialNetwork.Api.Dto.Account;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -8,9 +7,9 @@ using System.Windows;
 
 namespace SocialNetwork.Desktop.Services
 {
-    public class LoginService
+    public static class LoginService
     {
-        public async Task<HttpStatusCode> LoginServiceAsync(LoginModelDto loginModelDto)
+        public static async Task<HttpStatusCode> LoginServiceAsync(LoginModelDto loginModelDto)
         {
             if (loginModelDto != null)
             {

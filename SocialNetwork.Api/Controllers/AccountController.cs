@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace SocialNetwork.Api.Controllers
 {
     [Route("Wtentakle")]
-    public class AccountController : ControllerBase
+    public class AccountController : Controller
     {
         public AccountController(AccDbContext dbContext, ILogger<AccountController> logger)
         {
@@ -29,7 +29,7 @@ namespace SocialNetwork.Api.Controllers
 
         //POST WTentakle/Login
         [HttpPost("Login")]
-        public async Task<ActionResult> Login([FromBody]LoginModelDto model)
+        public async Task<IActionResult> Login([FromBody]LoginModelDto model)
         {
             if (ModelState.IsValid)
             {
@@ -43,7 +43,7 @@ namespace SocialNetwork.Api.Controllers
                     if (pass.Contains(account.Password))
                     {
                         await Authenticate(model.Login);
-                        return Ok();
+                        return Ok(User.Identity.Name);
                     }
 
                     return BadRequest();
@@ -56,7 +56,7 @@ namespace SocialNetwork.Api.Controllers
 
         //POST WTentakle/Registration/
         [HttpPost("Registration")]
-        public async Task<ActionResult> RegistrationAccountAsync([FromBody]RegistrationAccountRequest registration)
+        public async Task<IActionResult> RegistrationAccountAsync([FromBody]RegistrationAccountRequestDto registration)
         {
             if (ModelState.IsValid)
             {
@@ -93,20 +93,19 @@ namespace SocialNetwork.Api.Controllers
 
 
 
-        private async Task<IActionResult> Authenticate(string login)
+        private async Task Authenticate(string login)
         {
             var claims = new List<Claim>();
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, login);
+                new Claim(ClaimsIdentity.DefaultNameClaimType, "Login");
             };
 
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
+            ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
-            return Ok();
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
         }
 
-        public async Task<ActionResult> Logout()
+        public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok();

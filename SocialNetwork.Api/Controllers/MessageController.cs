@@ -7,11 +7,13 @@ using SocialNetwork.Api.Model.Messages;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SocialNetwork.Api.Controllers
 {
     [Route("WTentakle")]
-    public class MessageController : ControllerBase
+    [Authorize]
+    public class MessageController : Controller
     {
         public MessageController(AccDbContext appDbContext, ILogger<MessageController> logger)
         {
@@ -23,14 +25,14 @@ namespace SocialNetwork.Api.Controllers
         private readonly ILogger<MessageController> _logger;
 
         //GET RequestMessage
-        [HttpGet("Mail/{id}")]
-        public async Task<IActionResult> GetMessageAsync([FromRoute] long id)
+        [HttpGet("Mail")]
+        public async Task<IActionResult> GetMessageAsync()
         {
             List<string> messages = new();
 
             foreach (var item in _appDbContext.Messages)
             {
-                if (item.ReceiverId == id)
+                if (item.Receiver.Login == User.Identity.Name)
                 {
                     messages.Add(item.Text);
 
@@ -44,13 +46,13 @@ namespace SocialNetwork.Api.Controllers
         }
 
 
-        [HttpPost("Mail/{senderId}-{receiverId}")]
-        public async Task<ActionResult> SendMessageAsync([FromBody] string text, [FromRoute] long senderId, [FromRoute] long receiverId)
+        [HttpPost("Mail/{receiverId}")]
+        public async Task<IActionResult> SendMessageAsync([FromBody] string text, [FromRoute] long receiverId)
         {
-            Account senderAccount = await _appDbContext.Accounts.FirstOrDefaultAsync(i => i.Id == senderId);
+            Account senderAccount = await _appDbContext.Accounts.FirstOrDefaultAsync(i => i.Login == User.Identity.Name);
             if (senderAccount == null)
             {
-                _logger.LogDebug("Account with {Id} not found", senderId);
+                _logger.LogDebug("Account with {Id} not found", User.Identity.Name);
 
                 return NotFound();
             }
@@ -63,8 +65,6 @@ namespace SocialNetwork.Api.Controllers
                 return NotFound();
             }
             
-            if (senderId.Equals(receiverId))
-                return BadRequest();
 
             if (text != null)
             {

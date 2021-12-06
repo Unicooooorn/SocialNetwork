@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SocialNetwork.Api.Dto.Account
 {
-    public class UpdateAccountInfo
+    public class UpdateAccountInfoDto
     {
         public string Login { get; set; }
 

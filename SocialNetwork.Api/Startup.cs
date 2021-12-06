@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SocialNetwork.Api.Controllers;
 using SocialNetwork.Api.Data;
-using SocialNetwork.Api.Dto;
 using SocialNetwork.Api.Middlewares;
 
 namespace SocialNetwork.Api
@@ -29,7 +27,7 @@ namespace SocialNetwork.Api
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString();
+                    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Login");
                 });
 
             services.AddControllers()
@@ -48,7 +46,7 @@ namespace SocialNetwork.Api
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

@@ -3,10 +3,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:rules="clr-namespace:SocialNetwork.Desktop.Validations"
         xmlns:viewModel="clr-namespace:SocialNetwork.Desktop.ViewModel"
         d:DataContext="{d:DesignInstance Type = viewModel:RegistrationWindowViewModel}"
         mc:Ignorable="d" 
-      Title="RegisterPage" Height="500" Width="300">
+      Title="Registration" Height="525" Width="400">
+
     <Grid >
         <Grid.RowDefinitions >
             <RowDefinition Height="Auto"></RowDefinition>
@@ -18,25 +20,66 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0">
             <Label Content="Login"></Label>
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text="{Binding Path=RegistrationAccountRequest.Login, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <TextBox x:Name="Login" HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="RegistrationAccountRequest.Login" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </StackPanel>
         <StackPanel Grid.Row="1">
             <Label Content="FirstName"></Label>
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text="{Binding Path=RegistrationAccountRequest.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="RegistrationAccountRequest.FirstName" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                    </TextBox.Text>
+                </TextBox>
         </StackPanel>
         <StackPanel Grid.Row="2">
             <Label Content="LastName"></Label>
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text="{Binding Path=RegistrationAccountRequest.LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="RegistrationAccountRequest.LastName" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </StackPanel>
         <StackPanel Grid.Row="3">
             <Label Content="Password"></Label>
-            <TextBox HorizontalAlignment="Stretch" Margin="5" Text="{Binding Path=RegistrationAccountRequest.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="RegistrationAccountRequest.Password" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </StackPanel>
         <StackPanel Grid.Row="4">
             <Label Content="Date Of Birth"></Label>
+            <TextBox HorizontalAlignment="Stretch" Margin="5">
+                <TextBox.Text>
+                    <Binding Path="RegistrationAccountRequest.DateOfBirth" UpdateSourceTrigger="PropertyChanged" StringFormat="d">
+                        <Binding.ValidationRules>
+                            <rules:IsValidRegistrationForm ValidatesOnTargetUpdated="True"></rules:IsValidRegistrationForm>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
             <Calendar SelectedDate="{Binding Path=RegistrationAccountRequest.DateOfBirth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
         <Button Grid.Row="5" Height="20" Width="50" Margin="75,20,150,-20" Content="Register" Command="{Binding Path=RegistrationCommand}"></Button>
-        <Button Grid.Row="5" Height="20" Width="50" Margin="175,20,100,-20" Content="Cancel"/>
+        <Button Grid.Row="5" Height="20" Width="50" Margin="175,20,75,-20" Content="Cancel" Command="{Binding Path=CancelCommand}"/>
     </Grid>
 </Window>

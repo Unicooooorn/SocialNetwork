@@ -2,6 +2,7 @@
 using SocialNetwork.Desktop.Model;
 using SocialNetwork.Desktop.Services;
 using SocialNetwork.Desktop.View;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -16,11 +17,8 @@ namespace SocialNetwork.Desktop.ViewModel
             ExitCommand = new Command(_ => Exit());
             RegistrationCommand = new Command(_ => Registration());
         }
-        public LoginModelDto LoginModel { get; set; } = new LoginModelDto();
-
-        public LoginService LoginService { get; set; } = new LoginService();
-
-
+        public LoginModelDto LoginModel { get; set; } = new();
+        
 
         public ICommand LoginCommand { get; set; }
         public ICommand ExitCommand { get; set; }
@@ -32,13 +30,15 @@ namespace SocialNetwork.Desktop.ViewModel
             await LoginService.LoginServiceAsync(LoginModel);
         }
 
-        private void Exit()
+        private static void Exit()
         {
             Application.Current.Shutdown();
         }
 
-        private void Registration()
+        private static void Registration()
         {
+            var window = Application.Current.Windows.OfType<Window>().SingleOrDefault(w => w.IsActive);
+            window.Hide();
             var regWindow = new RegistrationWindow();
             regWindow.Show();
         }

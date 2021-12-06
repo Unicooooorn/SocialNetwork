@@ -9,11 +9,14 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace SocialNetwork.Api.Controllers
 {
     [Route("WTentakle")]
-    public class ProfileController : ControllerBase
+    [Authorize]
+    public class ProfileController : Controller
     {
         public ProfileController(AccDbContext dbContext, ILogger<ProfileController> logger)
         {
@@ -25,12 +28,12 @@ namespace SocialNetwork.Api.Controllers
         private readonly ILogger<ProfileController> _logger;
 
         //GET WTentakle/Profile
-        [HttpGet("Profile/{id}")]
-        public async Task<ActionResult<ProfileAccountRequest>> GetProfilesAsync(long id)
+        [HttpGet("Profile")]
+        public async Task<IActionResult> GetProfilesAsync()
         {
-            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(account => account.Id == id);
+            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(account => account.Login == User.Identity.Name);
 
-            ProfileAccountRequest profile = new ProfileAccountRequest()
+            ProfileAccountRequestDto profile = new ProfileAccountRequestDto()
             {
                 Id = account.Id,
                 Login = account.Login,
@@ -42,20 +45,20 @@ namespace SocialNetwork.Api.Controllers
         }
 
         //PUT Wtentakle/UpdateInfo
-        [HttpPut("UpdateInfo/{id}")]
-        public async Task<ActionResult> UpdateInfoAccountAsync([FromBody] UpdateAccountInfo updateInfo)
+        [HttpPut("UpdateInfo/")]
+        public async Task<IActionResult> UpdateInfoAccountAsync([FromBody] UpdateAccountInfoDto updateInfoDto)
         {
-            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == updateInfo.Login);
+            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
 
-            account.FirstName = updateInfo.FirstName ?? account.FirstName;
-            account.LastName = updateInfo.LastName ?? account.LastName;
-            account.Login = updateInfo.Login ?? account.Login;
+            account.FirstName = updateInfoDto.FirstName ?? account.FirstName;
+            account.LastName = updateInfoDto.LastName ?? account.LastName;
+            account.Login = updateInfoDto.Login ?? account.Login;
 
-            if (updateInfo.Password != null)
+            if (updateInfoDto.Password != null)
             {
                 int salt = account.Salt;
                 SHA256 _SHA256 = SHA256.Create();
-                account.Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(updateInfo.Password + salt)));
+                account.Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(updateInfoDto.Password + salt)));
             }
 
             _dbContext.Accounts.Update(account);
@@ -66,14 +69,15 @@ namespace SocialNetwork.Api.Controllers
 
 
         //DELETE Wtentakle/DeleteAcc
-        [HttpDelete("DeleteAcc/{id}")]
-        public async Task<ActionResult> DeleteAccountAsync([FromBody]string Pass, [FromRoute]long id)
+        [HttpDelete("DeleteAcc")]
+        public async Task<IActionResult> DeleteAccountAsync([FromBody]string Pass, [FromRoute]long id)
         {            
+
             if(Pass == null)
                 return BadRequest();
 
             SHA256 _SHA256 = SHA256.Create();
-            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == id);
+            Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
 
             if (account == null)
                 return NotFound();
@@ -88,29 +92,30 @@ namespace SocialNetwork.Api.Controllers
             return Ok();
         }
 
+
         //GET Wtentakle/GetFriend/
-        [HttpGet("GetFriend/{id}")]
-        public async Task<IActionResult> GetFriendAsync(long id)
+        [HttpGet("GetFriend")]
+        public async Task<IActionResult> GetFriendAsync()
         {
             List<Friend> friends = new();
 
             foreach (var friend in _dbContext.Friends)
             {
-                if (friend.IsFriend && (friend.FirstAccountId == id || friend.SecondAccountId == id))
+                if (friend.IsFriend && (friend.FirstAccount.Login == User.Identity.Name || friend.SecondAccount.Login == User.Identity.Name))
                 {
                     friends.Add(friend);
                 }
             }
 
-            List<ProfileAccountRequest> profileAccount = new();
+            List<ProfileAccountRequestDto> profileAccount = new();
             foreach (var friend in friends)
             {
-                if (friend.FirstAccountId == id)
+                if (friend.FirstAccount.Login == User.Identity.Name)
                 {
                     Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == friend.SecondAccountId);
 
                     profileAccount.Add(
-                        new ProfileAccountRequest()
+                        new ProfileAccountRequestDto()
                         {
                             Id = account.Id,
                             Login = account.Login,
@@ -125,7 +130,7 @@ namespace SocialNetwork.Api.Controllers
                         await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == friend.FirstAccountId);
 
                     profileAccount.Add(
-                        new ProfileAccountRequest()
+                        new ProfileAccountRequestDto()
                         {
                             Id = account.Id,
                             Login = account.Login,
@@ -142,15 +147,15 @@ namespace SocialNetwork.Api.Controllers
 
 
         //POST Wtentakle/AddFriend/
-        [HttpPost("AddFriend/{myAccountId}")]
-        public async Task<IActionResult> AddFriendAsync([FromBody] long friendAccountId, [FromRoute] long myAccountId)
+        [HttpPost("AddFriend")]
+        public async Task<IActionResult> AddFriendAsync([FromBody] long friendAccountId)
         {
             Account myAccount = await _dbContext.Accounts
-                .FirstOrDefaultAsync(x => x.Id == myAccountId);
+                .FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
             if (myAccount == null)
                 return BadRequest();
 
-            if (friendAccountId.Equals(myAccountId))
+            if (friendAccountId.Equals(User.Identity.Name))
                 return BadRequest();
 
             var friendAccount = await _dbContext.Accounts
@@ -159,7 +164,7 @@ namespace SocialNetwork.Api.Controllers
                 return BadRequest();
 
             var friends = await _dbContext.Friends
-                .FirstOrDefaultAsync( x => x.FirstAccountId == friendAccountId && x.SecondAccountId == myAccountId && x.IsFriend == false);
+                .FirstOrDefaultAsync( x => x.FirstAccountId == friendAccountId && x.SecondAccount.Login == User.Identity.Name && x.IsFriend == false);
             if (friends != null)
             {
                 friends.IsFriend = true;
@@ -184,13 +189,13 @@ namespace SocialNetwork.Api.Controllers
 
 
         ///DELETE Wtentakle/DropFriend
-        [HttpDelete("DeleteFriend/{myAccountId}")]
-        public async Task<IActionResult> DeleteFriendAsync([FromBody] long friendAccountId, [FromRoute] long myAccountId)
+        [HttpDelete("DeleteFriend")]
+        public async Task<IActionResult> DeleteFriendAsync([FromBody] long friendAccountId)
         {
             Friend friend = await _dbContext.Friends
                 .FirstOrDefaultAsync((x => 
-                    (x.FirstAccountId == myAccountId && x.SecondAccountId == friendAccountId) || 
-                    (x.FirstAccountId == friendAccountId && x.SecondAccountId == myAccountId)));
+                    (x.FirstAccount.Login == User.Identity.Name && x.SecondAccountId == friendAccountId) || 
+                    (x.FirstAccountId == friendAccountId && x.SecondAccount.Login == User.Identity.Name)));
 
             if (friend == null)
                 return NotFound();
