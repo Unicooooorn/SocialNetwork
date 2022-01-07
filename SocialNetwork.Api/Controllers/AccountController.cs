@@ -2,30 +2,43 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Dto.Account;
 using SocialNetwork.Api.Model.Accounts;
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using SocialNetwork.Api.Services;
+using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace SocialNetwork.Api.Controllers
 {
     [Route("Wtentakle")]
     public class AccountController : ControllerBase
     {
-        public AccountController(AccDbContext dbContext, ILogger<AccountController> logger)
+        public AccountController(AccDbContext dbContext, 
+                                ILogger<AccountController> logger, 
+                                IConfiguration configuration,
+                                IUserService userService)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _configuration = configuration;
+            _userService = userService;
         }
 
         private readonly AccDbContext _dbContext;
         private readonly ILogger<AccountController> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
 
         //POST WTentakle/Login
         [HttpPost("Login")]
@@ -42,11 +55,11 @@ namespace SocialNetwork.Api.Controllers
                     string pass = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(model.Password + account.Salt)));
                     if (pass.Contains(account.Password))
                     {
-                        await Authenticate(model.Login);
-                        return Ok(User.Identity.Name);
+                        Authenticate(model.Login);
+                        return Ok();
                     }
 
-                    return BadRequest();
+                    return Unauthorized();
                 }
                 return NotFound();
             }
@@ -78,14 +91,17 @@ namespace SocialNetwork.Api.Controllers
                         Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + _salt))),
                         DateOfBirth = registration.DateOfBirth.Date,
                         DateOfRegistration = DateTime.Now.Date,
-                        Salt = _salt
+                        Salt = _salt,
+                        Role = 3
                     };
                     _dbContext.Accounts.Add(account);
                     await _dbContext.SaveChangesAsync();
 
-                    await Authenticate(registration.Login);
+                    if (Authenticate(registration.Login) == Ok())
+                        return Ok();
 
-                    return Ok();
+
+                    return BadRequest();
                 }
             }
             return BadRequest();
@@ -93,16 +109,33 @@ namespace SocialNetwork.Api.Controllers
 
 
 
-        private async Task Authenticate(string login)
+        private IActionResult Authenticate(string login)
         {
-            var claims = new List<Claim>();
+            var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, login);
+                new Claim(JwtRegisteredClaimNames.Sub, login),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            ClaimsIdentity claimsIdentity = new(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var role = _userService.GetRolesAsync(login);
+            
+            claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Result));
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+            var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII
+                .GetBytes(_configuration.GetSection("Tokens:SECRET_KEY").Value)), SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                "ISSUER",
+                "AUDIENCE",
+                claims,
+                notBefore: DateTime.Now,
+                expires:DateTime.Now.AddMinutes(15),
+                signingCredentials);
+
+            if (token.Equals(null))
+                return BadRequest();
+
+            return Ok();
         }
 
         public async Task<IActionResult> Logout()

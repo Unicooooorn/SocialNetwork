@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SocialNetwork.Api.Data;
@@ -11,9 +12,10 @@ using SocialNetwork.Api.Data;
 namespace SocialNetwork.Api.Migrations
 {
     [DbContext(typeof(AccDbContext))]
-    partial class AccDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220107092052_AddRoles")]
+    partial class AddRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

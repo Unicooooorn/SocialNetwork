@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace SocialNetwork.Api.Model.Accounts
 {
@@ -19,5 +20,7 @@ namespace SocialNetwork.Api.Model.Accounts
         public DateTime DateOfRegistration { get; set; }
 
         public int Salt { get; set; }
+
+        public int Role { get; set; }
     }
 }
