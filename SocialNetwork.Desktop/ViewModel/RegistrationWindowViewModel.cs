@@ -11,8 +11,10 @@ namespace SocialNetwork.Desktop.ViewModel
 {
     public class RegistrationWindowViewModel : Notifier
     {
-        public RegistrationWindowViewModel()
+        private readonly IAccountService _accountService;
+        public RegistrationWindowViewModel(IAccountService accountService)
         {
+            _accountService = accountService;
             RegistrationCommand = new Command(_ => Registration());
             CancelCommand = new Command(_ => Cancel());
         }
@@ -24,7 +26,7 @@ namespace SocialNetwork.Desktop.ViewModel
 
         private async Task Registration()
         {
-            await RegistrationService.Registration(RegistrationAccountRequest);
+            await _accountService.Registration(RegistrationAccountRequest);
         }
 
         private static void Cancel()

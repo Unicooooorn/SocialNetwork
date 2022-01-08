@@ -15,14 +15,15 @@ namespace SocialNetwork.Api.Controllers
     [Authorize]
     public class MessageController : ControllerBase
     {
-        public MessageController(AccDbContext appDbContext, ILogger<MessageController> logger)
+        private readonly AccDbContext _appDbContext;
+        private readonly ILogger<MessageController> _logger;
+
+        public MessageController(AccDbContext appDbContext,
+                                ILogger<MessageController> logger)
         {
             _appDbContext = appDbContext;
             _logger = logger;
         }
-
-        private readonly AccDbContext _appDbContext;
-        private readonly ILogger<MessageController> _logger;
 
         //GET RequestMessage
         [HttpGet("Mail")]

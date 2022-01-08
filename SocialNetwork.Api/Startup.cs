@@ -9,6 +9,8 @@ using SocialNetwork.Api.Middlewares;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SocialNetwork.Api.Services;
+using System.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SocialNetwork.Api
 {
@@ -16,16 +18,16 @@ namespace SocialNetwork.Api
 
     public class Startup
     {
-        IConfiguration Configuration { get; }
-
         public Startup(IConfiguration configuration) => Configuration = configuration;
+
+        IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ExceptionHandlingMiddleware>();
 
             services.AddDbContext<AccDbContext>(options =>
-                options.UseNpgsql(Configuration["Connections:CONNECTION_STRING"]));
+                options.UseNpgsql(Configuration["connectionStrings:CONNECTION_STRING"]));
 
             services.AddScoped<IUserService, UserService>();
 
@@ -41,8 +43,8 @@ namespace SocialNetwork.Api
                     config.SaveToken = true;
                     config.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = Configuration["ISSUER"],
-                        ValidAudience = Configuration["AUDIENCE"],
+                        ValidIssuer = Configuration["Tokens:ISSUER"],
+                        ValidAudience = Configuration["Tokens:AUDIENCE"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
                             .GetBytes(Configuration.GetSection("Tokens:SECRET_KEY").Value))
                     };
@@ -53,7 +55,7 @@ namespace SocialNetwork.Api
                     options.JsonSerializerOptions.PropertyNamingPolicy = null);
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 

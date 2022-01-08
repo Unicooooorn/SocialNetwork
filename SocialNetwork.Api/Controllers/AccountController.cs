@@ -46,19 +46,15 @@ namespace SocialNetwork.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                SHA256 _SHA256 = SHA256.Create();
-
                 Account account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == model.Login);
 
                 if (account != null)
                 {
-                    string pass = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(model.Password + account.Salt)));
-                    if (pass.Contains(account.Password))
+                    if (model.Password.Contains(account.Password))
                     {
                         Authenticate(model.Login);
                         return Ok();
                     }
-
                     return Unauthorized();
                 }
                 return NotFound();
@@ -73,11 +69,9 @@ namespace SocialNetwork.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                Random rnd = new Random();
+                SHA256 sha256 = SHA256.Create();
 
-                SHA256 _SHA256 = SHA256.Create();
-
-                int _salt = rnd.Next();
+                int salt = new Random().Next();
 
                 Account account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == registration.Login);
 
@@ -88,26 +82,37 @@ namespace SocialNetwork.Api.Controllers
                         Login = registration.Login,
                         FirstName = registration.FirstName,
                         LastName = registration.LastName,
-                        Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + _salt))),
+                        Password = Encoding.UTF32.GetString(sha256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + salt))),
                         DateOfBirth = registration.DateOfBirth.Date,
                         DateOfRegistration = DateTime.Now.Date,
-                        Salt = _salt,
+                        Salt = salt,
                         Role = 3
                     };
                     _dbContext.Accounts.Add(account);
                     await _dbContext.SaveChangesAsync();
 
-                    if (Authenticate(registration.Login) == Ok())
-                        return Ok();
-
-
-                    return BadRequest();
+                    return Ok();
                 }
             }
             return BadRequest();
         }
 
+        //POST WTentakle/GetSalt
+        [HttpPost("GetSalt")]
+        public async Task<IActionResult> GetSalt(string login)
+        {
+            if (ModelState.IsValid)
+            {
+                Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == login);
 
+                if (account.Equals(null)) 
+                    return BadRequest();
+
+                return Ok(account.Salt);
+            }
+
+            return BadRequest();
+        }
 
         private IActionResult Authenticate(string login)
         {
@@ -135,12 +140,6 @@ namespace SocialNetwork.Api.Controllers
             if (token.Equals(null))
                 return BadRequest();
 
-            return Ok();
-        }
-
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Ok();
         }
     }

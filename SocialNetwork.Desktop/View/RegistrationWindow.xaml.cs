@@ -1,5 +1,6 @@
 ﻿using SocialNetwork.Desktop.ViewModel;
 using System.Windows;
+using SocialNetwork.Desktop.Services;
 
 namespace SocialNetwork.Desktop.View
 {
@@ -8,7 +9,10 @@ namespace SocialNetwork.Desktop.View
         public RegistrationWindow()
         {
             InitializeComponent();
-            DataContext = new RegistrationWindowViewModel();
+
+            var accountService = new AccountService();
+
+            DataContext = new RegistrationWindowViewModel(accountService);
         }
     }
 }

@@ -11,12 +11,16 @@ namespace SocialNetwork.Desktop.ViewModel
 {
     public class LoginViewModel : Notifier
     {
-        public LoginViewModel()
+        private readonly IAccountService _accountService;
+
+        public LoginViewModel(IAccountService accountService)
         {
+            _accountService = accountService;
             LoginCommand = new Command(_ => LoginCommandAsync());
             ExitCommand = new Command(_ => Exit());
             RegistrationCommand = new Command(_ => Registration());
         }
+
         public LoginModelDto LoginModel { get; set; } = new();
         
 
@@ -27,7 +31,7 @@ namespace SocialNetwork.Desktop.ViewModel
 
         private async Task LoginCommandAsync()
         {
-            await LoginService.LoginServiceAsync(LoginModel);
+            await _accountService.LoginServiceAsync(LoginModel);
         }
 
         private static void Exit()
