@@ -1,8 +1,11 @@
-﻿using SocialNetwork.Api.Dto.Account;
+﻿using System;
+using SocialNetwork.Api.Dto.Account;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -26,7 +29,11 @@ namespace SocialNetwork.Desktop.Services
                     return HttpStatusCode.BadRequest;
                 }
 
-                var salt = GetSalt(loginModelDto.Login);
+                SHA256 sha256 = SHA256.Create();
+                var pass = loginModelDto.Password;
+
+                loginModelDto.Password = Encoding.ASCII.GetString(
+                    sha256.ComputeHash(Encoding.ASCII.GetBytes(pass + GetSalt(loginModelDto.Login))));
 
                 using var client = new HttpClient();
 
@@ -56,6 +63,14 @@ namespace SocialNetwork.Desktop.Services
                 }
             }
 
+            int salt = new Random().Next();
+            SHA256 sha256 = SHA256.Create();
+
+            var pass = registrationAccountRequest.Password;
+
+            registrationAccountRequest.Password = Encoding.ASCII.GetString(
+                sha256.ComputeHash(Encoding.ASCII.GetBytes(pass + salt)));
+
             using var client = new HttpClient();
 
             HttpResponseMessage request = await client.PostAsync("https://localhost:5001/WTentakle/Registration",
@@ -78,8 +93,10 @@ namespace SocialNetwork.Desktop.Services
         {
             using var client = new HttpClient();
 
+            var content = JsonContent.Create(login);
+
             HttpResponseMessage response =
-                await client.PostAsync("https://localhost:5001/WTentakle/GetSalt", JsonContent.Create(login));
+                await client.PostAsync("https://localhost:5001/WTentakle/GetSalt", content);
 
             return 0;
         }

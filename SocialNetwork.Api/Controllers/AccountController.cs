@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -8,15 +6,14 @@ using Microsoft.IdentityModel.Tokens;
 using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Dto.Account;
 using SocialNetwork.Api.Model.Accounts;
+using SocialNetwork.Api.Services;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using SocialNetwork.Api.Services;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace SocialNetwork.Api.Controllers
@@ -69,10 +66,6 @@ namespace SocialNetwork.Api.Controllers
         {
             if (ModelState.IsValid)
             {
-                SHA256 sha256 = SHA256.Create();
-
-                int salt = new Random().Next();
-
                 Account account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Login == registration.Login);
 
                 if(account == null)
@@ -82,10 +75,10 @@ namespace SocialNetwork.Api.Controllers
                         Login = registration.Login,
                         FirstName = registration.FirstName,
                         LastName = registration.LastName,
-                        Password = Encoding.UTF32.GetString(sha256.ComputeHash(Encoding.UTF32.GetBytes(registration.Password + salt))),
+                        Password = registration.Password,
                         DateOfBirth = registration.DateOfBirth.Date,
                         DateOfRegistration = DateTime.Now.Date,
-                        Salt = salt,
+                        Salt = registration.Salt,
                         Role = 3
                     };
                     _dbContext.Accounts.Add(account);
@@ -99,11 +92,11 @@ namespace SocialNetwork.Api.Controllers
 
         //POST WTentakle/GetSalt
         [HttpPost("GetSalt")]
-        public async Task<IActionResult> GetSalt(string login)
+        public async Task<IActionResult> GetSalt([FromBody]JsonContent content)
         {
             if (ModelState.IsValid)
             {
-                Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == login);
+                Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == content.Value.ToString());
 
                 if (account.Equals(null)) 
                     return BadRequest();
@@ -127,7 +120,7 @@ namespace SocialNetwork.Api.Controllers
             claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Result));
 
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII
-                .GetBytes(_configuration.GetSection("Tokens:SECRET_KEY").Value)), SecurityAlgorithms.HmacSha256);
+                .GetBytes(_configuration.GetSection("SECRET_KEY").Value)), SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 "ISSUER",

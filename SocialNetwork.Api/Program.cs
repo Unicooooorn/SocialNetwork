@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SocialNetwork.Api.Data;
@@ -12,12 +13,12 @@ namespace SocialNetwork.Api
         {
             var host = CreateHostBuilder(args).Build();
 
-            using var scope = host.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AccDbContext>();
+            //using var scope = host.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            //var dbContext = scope.ServiceProvider.GetRequiredService<AccDbContext>();
 
-            dbContext.Database.Migrate();
+            //dbContext.Database.Migrate();
 
-            scope.Dispose();
+            //scope.Dispose();
 
             host.Run();
             

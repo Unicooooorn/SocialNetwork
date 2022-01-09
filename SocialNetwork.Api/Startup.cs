@@ -1,21 +1,16 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Middlewares;
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SocialNetwork.Api.Services;
-using System.Configuration;
-using Microsoft.Extensions.Hosting;
+using System.Text;
 
 namespace SocialNetwork.Api
 {
-
-
     public class Startup
     {
         public Startup(IConfiguration configuration) => Configuration = configuration;
@@ -27,7 +22,7 @@ namespace SocialNetwork.Api
             services.AddSingleton<ExceptionHandlingMiddleware>();
 
             services.AddDbContext<AccDbContext>(options =>
-                options.UseNpgsql(Configuration["connectionStrings:CONNECTION_STRING"]));
+                options.UseNpgsql(Configuration["CONNECTION_STRING"]));
 
             services.AddScoped<IUserService, UserService>();
 
@@ -43,10 +38,10 @@ namespace SocialNetwork.Api
                     config.SaveToken = true;
                     config.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = Configuration["Tokens:ISSUER"],
-                        ValidAudience = Configuration["Tokens:AUDIENCE"],
+                        ValidIssuer = Configuration["ISSUER"],
+                        ValidAudience = Configuration["AUDIENCE"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
-                            .GetBytes(Configuration.GetSection("Tokens:SECRET_KEY").Value))
+                            .GetBytes(Configuration["SECRET_KEY"]))
                     };
                 });
 

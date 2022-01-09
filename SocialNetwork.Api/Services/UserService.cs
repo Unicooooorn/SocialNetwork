@@ -1,9 +1,8 @@
-﻿using System;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Dto.Account;
+using System;
+using System.Threading.Tasks;
 
 namespace SocialNetwork.Api.Services
 {

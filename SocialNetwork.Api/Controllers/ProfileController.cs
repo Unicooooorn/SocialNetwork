@@ -7,8 +7,6 @@ using SocialNetwork.Api.Dto.Account;
 using SocialNetwork.Api.Model.Accounts;
 using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SocialNetwork.Api.Controllers
@@ -53,13 +51,6 @@ namespace SocialNetwork.Api.Controllers
             account.LastName = updateInfoDto.LastName ?? account.LastName;
             account.Login = updateInfoDto.Login ?? account.Login;
 
-            if (updateInfoDto.Password != null)
-            {
-                int salt = account.Salt;
-                SHA256 _SHA256 = SHA256.Create();
-                account.Password = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(updateInfoDto.Password + salt)));
-            }
-
             _dbContext.Accounts.Update(account);
             await _dbContext.SaveChangesAsync();
 
@@ -69,19 +60,15 @@ namespace SocialNetwork.Api.Controllers
 
         //DELETE Wtentakle/DeleteAcc
         [HttpDelete("DeleteAcc")]
-        public async Task<IActionResult> DeleteAccountAsync([FromBody]string Pass, [FromRoute]long id)
-        {            
-
-            if(Pass == null)
+        public async Task<IActionResult> DeleteAccountAsync([FromBody]string pass, [FromRoute]long id)
+        {
+            if(pass == null)
                 return BadRequest();
 
-            SHA256 _SHA256 = SHA256.Create();
             Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
 
             if (account == null)
                 return NotFound();
-
-            string pass = Encoding.UTF32.GetString(_SHA256.ComputeHash(Encoding.UTF32.GetBytes(Pass + account.Salt)));
 
             if (pass.Contains(account.Password))
             {

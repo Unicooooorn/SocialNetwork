@@ -11,5 +11,7 @@
         public string Password { get; set; }
 
         public DateTime DateOfBirth { get; set; }
+
+        public int Salt { get; set; }
     }
 }
