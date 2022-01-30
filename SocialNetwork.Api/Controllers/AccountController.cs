@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SocialNetwork.Api.Data;
@@ -10,8 +12,8 @@ using SocialNetwork.Api.Services;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
@@ -21,21 +23,25 @@ namespace SocialNetwork.Api.Controllers
     [Route("Wtentakle")]
     public class AccountController : ControllerBase
     {
+        private readonly AccDbContext _dbContext;
+        private readonly ILogger<AccountController> _logger;
+        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
+        private readonly IWebHostEnvironment _environment;
+
         public AccountController(AccDbContext dbContext, 
                                 ILogger<AccountController> logger, 
                                 IConfiguration configuration,
-                                IUserService userService)
+                                IUserService userService,
+                                IWebHostEnvironment environment)
         {
             _dbContext = dbContext;
             _logger = logger;
             _configuration = configuration;
             _userService = userService;
+            _environment = environment;
         }
 
-        private readonly AccDbContext _dbContext;
-        private readonly ILogger<AccountController> _logger;
-        private readonly IConfiguration _configuration;
-        private readonly IUserService _userService;
 
         //POST WTentakle/Login
         [HttpPost("Login")]
@@ -47,6 +53,16 @@ namespace SocialNetwork.Api.Controllers
 
                 if (account != null)
                 {
+                    if (_environment.IsDevelopment())
+                    {
+                        var pass = Encoding.ASCII.GetString(SHA256.Create().ComputeHash(Encoding.ASCII.GetBytes(model.Password + account.Salt)));
+
+                        if (!pass.Contains(account.Password)) return Unauthorized();
+
+                        Authenticate(model.Login);
+                        return Ok();
+                    }
+
                     if (model.Password.Contains(account.Password))
                     {
                         Authenticate(model.Login);
@@ -90,13 +106,13 @@ namespace SocialNetwork.Api.Controllers
             return BadRequest();
         }
 
-        //POST WTentakle/GetSalt
-        [HttpPost("GetSalt")]
-        public async Task<IActionResult> GetSalt([FromBody]JsonContent content)
+        //GET WTentakle/GetSalt
+        [HttpGet("GetSalt/{login}")]
+        public async Task<ActionResult<int>> GetSalt([FromRoute]string login)
         {
             if (ModelState.IsValid)
             {
-                Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == content.Value.ToString());
+                Account account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Login == login);
 
                 if (account.Equals(null)) 
                     return BadRequest();
@@ -120,11 +136,11 @@ namespace SocialNetwork.Api.Controllers
             claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, role.Result));
 
             var signingCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.ASCII
-                .GetBytes(_configuration.GetSection("SECRET_KEY").Value)), SecurityAlgorithms.HmacSha256);
+                .GetBytes(_configuration["SECRET_KEY_SN"])), SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                "ISSUER",
-                "AUDIENCE",
+                _configuration["ISSUER_SN"],
+                _configuration["AUDIENCE_SN"],
                 claims,
                 notBefore: DateTime.Now,
                 expires:DateTime.Now.AddMinutes(15),
@@ -133,7 +149,7 @@ namespace SocialNetwork.Api.Controllers
             if (token.Equals(null))
                 return BadRequest();
 
-            return Ok();
+            return Ok(token);
         }
     }
 }

@@ -12,6 +12,6 @@ namespace SocialNetwork.Desktop.Services
     {
         public Task<HttpStatusCode> LoginServiceAsync(LoginModelDto loginModelDto);
         public Task<HttpStatusCode> Registration(RegistrationAccountRequestDto registrationAccountRequest);
-        public Task<int> GetSalt(string login);
+        public Task<int?> GetSalt(string login);
     }
 }

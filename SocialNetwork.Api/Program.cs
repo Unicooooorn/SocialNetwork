@@ -21,7 +21,6 @@ namespace SocialNetwork.Api
             //scope.Dispose();
 
             host.Run();
-            
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

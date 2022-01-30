@@ -3,11 +3,13 @@ using SocialNetwork.Api.Dto.Account;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SocialNetwork.Desktop.Services
 {
@@ -29,11 +31,10 @@ namespace SocialNetwork.Desktop.Services
                     return HttpStatusCode.BadRequest;
                 }
 
-                SHA256 sha256 = SHA256.Create();
                 var pass = loginModelDto.Password;
 
                 loginModelDto.Password = Encoding.ASCII.GetString(
-                    sha256.ComputeHash(Encoding.ASCII.GetBytes(pass + GetSalt(loginModelDto.Login))));
+                    SHA256.Create().ComputeHash(Encoding.ASCII.GetBytes(pass + await GetSalt(loginModelDto.Login))));
 
                 using var client = new HttpClient();
 
@@ -63,17 +64,16 @@ namespace SocialNetwork.Desktop.Services
                 }
             }
 
-            int salt = new Random().Next();
-            SHA256 sha256 = SHA256.Create();
+            registrationAccountRequest.Salt = new Random().Next();
 
             var pass = registrationAccountRequest.Password;
 
             registrationAccountRequest.Password = Encoding.ASCII.GetString(
-                sha256.ComputeHash(Encoding.ASCII.GetBytes(pass + salt)));
+                SHA256.Create().ComputeHash(Encoding.ASCII.GetBytes(pass + registrationAccountRequest.Salt)));
 
             using var client = new HttpClient();
 
-            HttpResponseMessage request = await client.PostAsync("https://localhost:5001/WTentakle/Registration",
+            var request = await client.PostAsync("https://localhost:5001/WTentakle/Registration",
                 JsonContent.Create(registrationAccountRequest));
             if (request.StatusCode != HttpStatusCode.OK)
             {
@@ -89,16 +89,18 @@ namespace SocialNetwork.Desktop.Services
             return HttpStatusCode.OK;
         }
 
-        public async Task<int> GetSalt(string login)
+        public async Task<int?> GetSalt(string login)
         {
             using var client = new HttpClient();
 
-            var content = JsonContent.Create(login);
+            var response =
+                await client.GetAsync($"https://localhost:5001/WTentakle/GetSalt/{login}");
+            if (response.IsSuccessStatusCode)
+            {
+                return Convert.ToInt32(response.Content.ReadAsStringAsync().Result);
+            }
 
-            HttpResponseMessage response =
-                await client.PostAsync("https://localhost:5001/WTentakle/GetSalt", content);
-
-            return 0;
+            return (int?)null;
         }
     }
 }

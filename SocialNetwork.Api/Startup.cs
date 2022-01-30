@@ -8,21 +8,28 @@ using SocialNetwork.Api.Data;
 using SocialNetwork.Api.Middlewares;
 using SocialNetwork.Api.Services;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 
 namespace SocialNetwork.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration) => Configuration = configuration;
-
+        private readonly IWebHostEnvironment _environment;
         IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        {
+            _environment = environment;
+            Configuration = configuration;
+        }
+
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ExceptionHandlingMiddleware>();
 
             services.AddDbContext<AccDbContext>(options =>
-                options.UseNpgsql(Configuration["CONNECTION_STRING"]));
+                options.UseNpgsql(Configuration["CONNECTION_STRING_SN"]));
 
             services.AddScoped<IUserService, UserService>();
 
@@ -38,10 +45,10 @@ namespace SocialNetwork.Api
                     config.SaveToken = true;
                     config.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidIssuer = Configuration["ISSUER"],
-                        ValidAudience = Configuration["AUDIENCE"],
+                        ValidIssuer = Configuration["ISSUER_SN"],
+                        ValidAudience = Configuration["AUDIENCE_SN"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII
-                            .GetBytes(Configuration["SECRET_KEY"]))
+                            .GetBytes(Configuration["SECRET_KEY_SN"]))
                     };
                 });
 
